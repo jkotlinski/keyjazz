@@ -30,9 +30,16 @@ CMD_SYNC_TICK=106  # Sync only, no transfer.
 CMD_LINKSPEED=107
 CMD_STATUS=108
 
-def version():
+def pack(ints):
     import struct
-    return struct.pack("bbbb", CMD_VERSION, 1, 3, 0)  # BGB v1.3.0
+    return struct.pack("b" * len(ints), *ints)
+
+def unpack(string):
+    import struct
+    return struct.unpack("b" * len(string), string)
+
+def version():
+    return pack([CMD_VERSION, 1, 3, 0])
 
 def connect():
     import socket
@@ -42,15 +49,16 @@ def connect():
     except socket.error:
         print "Connect failed!"
         return
-    s.send(version())
+    s.send(pack([CMD_VERSION, 1, 3, 0]))  # BGB v1.3.0
     while True:
         reply = s.recv(1024)
         while reply:
             cmd = ord(reply[0])
             if cmd == CMD_VERSION:
-                assert ord(reply[1]) == 1
-                assert ord(reply[2]) == 3
-                assert ord(reply[3]) == 0
+                version = unpack(reply[1:4])
+                if version != (1, 3, 0):
+                    print "unknown BGB version", version
+                    return
                 print "connected with BGB 1.3.0!"
             elif cmd == CMD_STATUS:
                 print "BGB status", ord(reply[1])
