@@ -44,39 +44,55 @@ def unpack(string):
 def version():
     return pack([CMD_VERSION, 1, 3, 0])
 
+import socket
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+def handle_reply():
+    reply = s.recv(1024)
+    while reply:
+        cmd = ord(reply[0])
+        if cmd == CMD_VERSION:
+            version = unpack(reply[1:4])
+            if version != (1, 3, 0):
+                sys.exit("unknown BGB version", version)
+            print "connected with BGB 1.3.0!"
+        elif cmd == CMD_STATUS:
+            status = ord(reply[1])
+            if status == STATUS_ACTIVE:
+                print "BGB active"
+            elif status == STATUS_PAUSED:
+                print "BGB paused"
+            else:
+                print "Unknown BGB status", status
+        elif cmd == CMD_SYNC_TICK:
+            pass
+        else:
+            print "Unknown command", cmd
+            continue
+        reply = reply[4:]
+
+
 def connect():
-    import socket
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         s.connect(("localhost", 8765))
     except socket.error:
         print "Connect failed!"
-        return
+        return False
     s.send(pack([CMD_VERSION] + [1, 3, 0]))  # BGB v1.3.0
+    handle_reply()
     s.send(pack([CMD_STATUS, STATUS_ACTIVE, 0, 0]))
-    while True:
-        reply = s.recv(1024)
-        while reply:
-            cmd = ord(reply[0])
-            if cmd == CMD_VERSION:
-                version = unpack(reply[1:4])
-                if version != (1, 3, 0):
-                    print "unknown BGB version", version
-                    return
-                print "connected with BGB 1.3.0!"
-            elif cmd == CMD_STATUS:
-                status = ord(reply[1])
-                if status == STATUS_ACTIVE:
-                    print "BGB active"
-                elif status == STATUS_PAUSED:
-                    print "BGB paused"
-                else:
-                    print "Unknown BGB status", status
-            elif cmd == CMD_SYNC_TICK:
-                pass
-            else:
-                print "Unknown command", cmd
-                continue
-            reply = reply[4:]
+    handle_reply()
+
+J_START = 0x80
+J_SELECT = 0x40
+J_B = 0x20
+J_A = 0x10
+J_DOWN = 8
+J_UP = 4
+J_LEFT = 2
+J_RIGHT = 1
 
 connect()
+while True:
+    s.send(pack([CMD_JOYPAD, J_DOWN, 0, 0]))
+    handle_reply()
