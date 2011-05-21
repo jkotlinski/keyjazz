@@ -22,13 +22,16 @@ THE SOFTWARE.
 
 # BGB link protocol.
 
-CMD_VERSION=1
-CMD_JOYPAD=101
-CMD_SYNC_SEND=104  # Sending byte as active.
-CMD_SYNC_REPLY=105 # Sending byte as passive.
-CMD_SYNC_TICK=106  # Sync only, no transfer.
-CMD_LINKSPEED=107
-CMD_STATUS=108
+CMD_VERSION = 1
+CMD_JOYPAD = 101
+CMD_SYNC_SEND = 104  # Sending byte as active.
+CMD_SYNC_REPLY = 105 # Sending byte as passive.
+CMD_SYNC_TICK = 106  # Sync only, no transfer.
+CMD_LINKSPEED = 107
+CMD_STATUS = 108
+
+STATUS_ACTIVE = 1
+STATUS_PAUSED = 3
 
 def pack(ints):
     import struct
@@ -49,7 +52,8 @@ def connect():
     except socket.error:
         print "Connect failed!"
         return
-    s.send(pack([CMD_VERSION, 1, 3, 0]))  # BGB v1.3.0
+    s.send(pack([CMD_VERSION] + [1, 3, 0]))  # BGB v1.3.0
+    s.send(pack([CMD_STATUS, STATUS_ACTIVE, 0, 0]))
     while True:
         reply = s.recv(1024)
         while reply:
@@ -61,7 +65,15 @@ def connect():
                     return
                 print "connected with BGB 1.3.0!"
             elif cmd == CMD_STATUS:
-                print "BGB status", ord(reply[1])
+                status = ord(reply[1])
+                if status == STATUS_ACTIVE:
+                    print "BGB active"
+                elif status == STATUS_PAUSED:
+                    print "BGB paused"
+                else:
+                    print "Unknown BGB status", status
+            elif cmd == CMD_SYNC_TICK:
+                pass
             else:
                 print "Unknown command", cmd
                 continue
