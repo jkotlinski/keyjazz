@@ -71,10 +71,7 @@ def handle_reply():
         packet = packet[4:]
 
 def connect():
-    try:
-        s.connect(("localhost", 8765))
-    except socket.error:
-        exit("Connect failed!")
+    s.connect(("localhost", 8765))
 
 J_START = 0x80
 J_SELECT = 0x40
@@ -98,7 +95,7 @@ def send_extended(key):
     s.send(pack([CMD_SYNC_SEND, key, 0x85, 0]))
     handle_reply()
 
-connect()
+"""
 while True:
     # print "start"
     send_extended(K_DOWN)
@@ -111,3 +108,4 @@ while True:
     s.setblocking(1)
     import time
     time.sleep(0.2)
+"""
