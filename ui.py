@@ -3,36 +3,62 @@ from threading import Thread
 
 import bgb
 
+connected = False
+
 def key(event):
     print "pressed", event.keysym
 
 def key_release(event):
     print "release", event.keysym
 
+has_focus = False
+
+def update_text():
+    if connected:
+        if has_focus:
+            s = "Keyjazz!"
+        else:
+            s = "Click me!"
+    else:
+        s = "Connecting..."
+    text.set(s)
+
+def got_focus(event):
+    global has_focus
+    has_focus = True
+    update_text()
+
+def lost_focus(event):
+    global has_focus
+    has_focus = False
+    update_text()
+
 root = Tk()
-root.title("Keyjazz")
 root.overrideredirect(1)  # Removes all window decorations!
 frame = Frame(root, width=120, height=20)
 frame.bind("<Key>", key)
 frame.bind("<KeyRelease>", key_release)
+frame.bind("<FocusIn>", got_focus)
+frame.bind("<FocusOut>", lost_focus)
 text = StringVar()
+label = Label(frame, textvariable=text, bg="black", fg="green")
 text.set("Connecting...")
-logo = Label(frame, textvariable=text, bg="black", fg="green")
-logo.pack()
+label.pack()
 frame.pack()
 frame.focus_set()
 
 class BgbThread(Thread):
     def run(self):
         import socket
-        try:
-            bgb.connect()
-        except socket.error:
-            text.set("Connect failed!")
-            import time
-            time.sleep(2)
-            root.destroy()
-        text.set("Keyjazz!")
+        while True:
+            try:
+                bgb.connect()
+                break
+            except socket.error:
+                pass
+        global connected
+        connected = True
+        update_text()
 
 bgb_thread = BgbThread()
 bgb_thread.start()
