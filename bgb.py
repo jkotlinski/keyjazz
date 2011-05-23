@@ -103,5 +103,11 @@ while True:
     # print "start"
     send_extended(K_DOWN)
     # s.send(pack([CMD_SYNC_SEND, K_DOWN, 0x85, 0]))
-    for i in xrange(10000):
+    s.setblocking(0)
+    try:
         handle_reply()
+    except socket.error:
+        pass
+    s.setblocking(1)
+    import time
+    time.sleep(0.2)
