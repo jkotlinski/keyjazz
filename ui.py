@@ -7,9 +7,13 @@ def key_release(event):
     print "release", event.keysym
 
 root = Tk()
-frame = Frame(root, height=80)
+root.title("Keyjazz")
+root.overrideredirect(1)  # Removes all window decorations!
+frame = Frame(root, width=120, height=20)
 frame.bind("<Key>", key)
 frame.bind("<KeyRelease>", key_release)
+logo = Label(frame, text="Keyjazz!", bg="black", fg="green")
+logo.pack()
 frame.pack()
 frame.focus_set()
 
