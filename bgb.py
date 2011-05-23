@@ -23,23 +23,19 @@ THE SOFTWARE.
 # BGB link protocol.
 
 CMD_VERSION = 1
-CMD_JOYPAD = 101
-CMD_SYNC_SEND = 104  # Sending byte as active.
-CMD_SYNC_REPLY = 105 # Sending byte as passive.
-CMD_SYNC_TICK = 106  # Sync only, no transfer.
-CMD_LINKSPEED = 107
-CMD_STATUS = 108
-
-STATUS_ACTIVE = 1
-STATUS_PAUSED = 3
+CMD_JOYPAD = 0x65
+CMD_SYNC_SEND = 0x68  # Sending byte as active.
+CMD_SYNC_REPLY = 0x69 # Sending byte as passive.
+CMD_SYNC_TICK = 0x6a  # Sync only, no transfer.
+CMD_LINKSPEED = 0x6b
 
 def pack(ints):
     import struct
-    return struct.pack("b" * len(ints), *ints)
+    return struct.pack("B" * len(ints), *ints)
 
 def unpack(string):
     import struct
-    return struct.unpack("b" * len(string), string)
+    return list(struct.unpack("B" * len(string), string))
 
 def version():
     return pack([CMD_VERSION, 1, 3, 0])
@@ -48,40 +44,37 @@ import socket
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 def handle_reply():
-    reply = s.recv(1024)
-    while reply:
-        cmd = ord(reply[0])
+    packet = s.recv(1024)
+    while packet:
+        cmd = ord(packet[0])
         if cmd == CMD_VERSION:
-            version = unpack(reply[1:4])
-            if version != (1, 3, 0):
-                sys.exit("unknown BGB version", version)
-            print "connected with BGB 1.3.0!"
-        elif cmd == CMD_STATUS:
-            status = ord(reply[1])
-            if status == STATUS_ACTIVE:
-                print "BGB active"
-            elif status == STATUS_PAUSED:
-                print "BGB paused"
-            else:
-                print "Unknown BGB status", status
+            reply = unpack(packet)
+            version = reply[1:4]
+            if version != [0, 0x55, 1]:
+                sys.exit("wrong BGB version - use v1.12!")
+            print "connected with BGB 1.12!"
+            s.send(packet)
+        elif cmd == CMD_SYNC_REPLY:
+            print "reply", unpack(packet)
+        elif cmd == CMD_LINKSPEED:
+            s.send(packet)
+        elif cmd == CMD_JOYPAD:
+            print "joypad", unpack(packet)
         elif cmd == CMD_SYNC_TICK:
             pass
+            # print "tick", reply[2:4]
+            # s.send(packet)
+            # print time.time()
         else:
             print "Unknown command", cmd
             continue
-        reply = reply[4:]
-
+        packet = packet[4:]
 
 def connect():
     try:
         s.connect(("localhost", 8765))
     except socket.error:
-        print "Connect failed!"
-        return False
-    s.send(pack([CMD_VERSION] + [1, 3, 0]))  # BGB v1.3.0
-    handle_reply()
-    s.send(pack([CMD_STATUS, STATUS_ACTIVE, 0, 0]))
-    handle_reply()
+        exit("Connect failed!")
 
 J_START = 0x80
 J_SELECT = 0x40
@@ -92,7 +85,23 @@ J_UP = 4
 J_LEFT = 2
 J_RIGHT = 1
 
+K_EXTENDED = 3
+
+K_ENTER = 0x2d
+K_UP = 0x57
+K_DOWN = 0x27
+
+def send_extended(key):
+    print "send extended"
+    s.send(pack([CMD_SYNC_SEND, K_EXTENDED, 0x85, 0]))
+    handle_reply()
+    s.send(pack([CMD_SYNC_SEND, key, 0x85, 0]))
+    handle_reply()
+
 connect()
 while True:
-    s.send(pack([CMD_JOYPAD, J_DOWN, 0, 0]))
-    handle_reply()
+    # print "start"
+    send_extended(K_DOWN)
+    # s.send(pack([CMD_SYNC_SEND, K_DOWN, 0x85, 0]))
+    for i in xrange(10000):
+        handle_reply()
