@@ -77,7 +77,7 @@ def connect():
     handle_reply()
 
 def send(keys):
-    s.setblocking(0)
+    s.setblocking(1)
     for key in keys:
         cmd = [CMD_SYNC_SEND, key, 0x85, 0]
         s.send(pack(cmd))
@@ -85,6 +85,7 @@ def send(keys):
         # to add some sleep here...
         import time
         time.sleep(0.03)
+    s.setblocking(0)
     try:
         handle_reply()
     except socket.error:
