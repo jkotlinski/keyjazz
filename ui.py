@@ -24,11 +24,12 @@ from Tkinter import *
 from threading import Thread
 
 import bgb
+import ps2
 
 connected = False
 
 def key(event):
-    print "pressed", event.keysym
+    print "pressed", event.keysym, ps2.key_to_ps2(event.keysym)
 
 def key_release(event):
     print "release", event.keysym
