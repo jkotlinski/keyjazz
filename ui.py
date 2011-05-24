@@ -22,16 +22,23 @@ THE SOFTWARE.
 
 from Tkinter import *
 from threading import Thread
+import Queue
 
 import bgb
 import ps2
 
 connected = False
+shutdown = False
+
+send_queue = Queue.Queue()
 
 def key(event):
-    ps2 = ps2.key_to_ps2(event.keysym)
-    if not ps2:
-        print "unknown", event.keysym
+    cmd = ps2.key_to_ps2(event.keysym)
+    if cmd:
+        for byte in cmd:
+            send_queue.put(byte)
+    else:
+        print "unknown key", event.keysym
 
 def key_release(event):
     print "release", event.keysym
@@ -58,8 +65,13 @@ def lost_focus(event):
     has_focus = False
     update_text()
 
+def destroy(event):
+    global shutdown
+    shutdown = True
+
 root = Tk()
 root.title("Keyjazz")
+root.bind("<Destroy>", destroy)
 frame = Frame(root, width=120, height=20)
 frame.bind("<Key>", key)
 frame.bind("<KeyRelease>", key_release)
@@ -80,7 +92,8 @@ class BgbThread(Thread):
                 bgb.connect()
                 break
             except socket.error:
-                pass
+                if shutdown:
+                    return
         global connected
         connected = True
         update_text()
@@ -88,4 +101,7 @@ class BgbThread(Thread):
 bgb_thread = BgbThread()
 bgb_thread.start()
 
-root.mainloop()
+try:
+    root.mainloop()
+except KeyboardInterrupt:
+    shutdown = True
