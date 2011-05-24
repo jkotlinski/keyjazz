@@ -29,7 +29,9 @@ import ps2
 connected = False
 
 def key(event):
-    print "pressed", event.keysym, ps2.key_to_ps2(event.keysym)
+    ps2 = ps2.key_to_ps2(event.keysym)
+    if not ps2:
+        print "unknown", event.keysym
 
 def key_release(event):
     print "release", event.keysym
@@ -57,14 +59,14 @@ def lost_focus(event):
     update_text()
 
 root = Tk()
-root.overrideredirect(1)  # Removes all window decorations!
+root.title("Keyjazz")
 frame = Frame(root, width=120, height=20)
 frame.bind("<Key>", key)
 frame.bind("<KeyRelease>", key_release)
 frame.bind("<FocusIn>", got_focus)
 frame.bind("<FocusOut>", lost_focus)
 text = StringVar()
-label = Label(frame, textvariable=text, bg="black", fg="green")
+label = Label(frame, width=20, textvariable=text, bg="black", fg="green")
 text.set("Connecting...")
 label.pack()
 frame.pack()
