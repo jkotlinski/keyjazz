@@ -55,7 +55,8 @@ def handle_reply():
             print "connected with BGB 1.12!"
             s.send(packet)
         elif cmd == CMD_SYNC_REPLY:
-            print "reply", unpack(packet)
+            # print "reply", unpack(packet)
+            pass
         elif cmd == CMD_LINKSPEED:
             s.send(packet)
         elif cmd == CMD_JOYPAD:
@@ -70,8 +71,10 @@ def handle_reply():
             continue
         packet = packet[4:]
 
+# May throw socket.error if connect times out.
 def connect():
     s.connect(("localhost", 8765))
+    handle_reply()
 
 J_START = 0x80
 J_SELECT = 0x40
@@ -88,24 +91,17 @@ K_ENTER = 0x2d
 K_UP = 0x57
 K_DOWN = 0x27
 
-def send_extended(key):
-    print "send extended"
-    s.send(pack([CMD_SYNC_SEND, K_EXTENDED, 0x85, 0]))
-    handle_reply()
-    s.send(pack([CMD_SYNC_SEND, key, 0x85, 0]))
-    handle_reply()
-
-"""
-while True:
-    # print "start"
-    send_extended(K_DOWN)
-    # s.send(pack([CMD_SYNC_SEND, K_DOWN, 0x85, 0]))
+def send(keys):
     s.setblocking(0)
+    for key in keys:
+        cmd = [CMD_SYNC_SEND, key, 0x85, 0]
+        s.send(pack(cmd))
+        # Since LSDj is rather timing specific, we need
+        # to add some sleep here...
+        import time
+        time.sleep(0.03)
+
     try:
         handle_reply()
     except socket.error:
         pass
-    s.setblocking(1)
-    import time
-    time.sleep(0.2)
-"""

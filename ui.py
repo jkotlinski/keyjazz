@@ -35,8 +35,7 @@ send_queue = Queue.Queue()
 def key(event):
     cmd = ps2.key_to_ps2(event.keysym)
     if cmd:
-        for byte in cmd:
-            send_queue.put(byte)
+        send_queue.put(cmd)
     else:
         print "unknown key", event.keysym
 
@@ -65,9 +64,12 @@ def lost_focus(event):
     has_focus = False
     update_text()
 
-def destroy(event):
+def destroy(event=None):
+    global connected
     global shutdown
+    connected = True
     shutdown = True
+    send_queue.put(None)
 
 root = Tk()
 root.title("Keyjazz")
@@ -87,16 +89,20 @@ frame.focus_set()
 class BgbThread(Thread):
     def run(self):
         import socket
-        while True:
+        global connected
+        while not connected:
             try:
                 bgb.connect()
-                break
+                connected = True
             except socket.error:
-                if shutdown:
-                    return
-        global connected
-        connected = True
+                pass
         update_text()
+
+        while True:
+            cmd = send_queue.get()
+            if not cmd:
+                break
+            bgb.send(cmd)
 
 bgb_thread = BgbThread()
 bgb_thread.start()
@@ -104,4 +110,4 @@ bgb_thread.start()
 try:
     root.mainloop()
 except KeyboardInterrupt:
-    shutdown = True
+    destroy()
