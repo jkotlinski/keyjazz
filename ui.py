@@ -105,8 +105,7 @@ class BgbThread(Thread):
                 break
             bgb.send(cmd)
 
-bgb_thread = BgbThread()
-bgb_thread.start()
+BgbThread().start()
 
 try:
     root.mainloop()
