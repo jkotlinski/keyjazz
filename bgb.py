@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-# BGB link protocol.
+# BGB link.
 
 CMD_VERSION = 1
 CMD_JOYPAD = 0x65
@@ -76,21 +76,6 @@ def connect():
     s.connect(("localhost", 8765))
     handle_reply()
 
-J_START = 0x80
-J_SELECT = 0x40
-J_B = 0x20
-J_A = 0x10
-J_DOWN = 8
-J_UP = 4
-J_LEFT = 2
-J_RIGHT = 1
-
-K_EXTENDED = 3
-
-K_ENTER = 0x2d
-K_UP = 0x57
-K_DOWN = 0x27
-
 def send(keys):
     s.setblocking(0)
     for key in keys:
@@ -100,7 +85,6 @@ def send(keys):
         # to add some sleep here...
         import time
         time.sleep(0.03)
-
     try:
         handle_reply()
     except socket.error:

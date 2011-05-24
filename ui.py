@@ -28,10 +28,10 @@ import bgb
 import ps2
 
 connected = False
-shutdown = False
 
 send_queue = Queue.Queue()
 
+# UI callbacks.
 def key(event):
     cmd = ps2.key_to_ps2(event.keysym)
     if cmd:
@@ -66,11 +66,10 @@ def lost_focus(event):
 
 def destroy(event=None):
     global connected
-    global shutdown
     connected = True
-    shutdown = True
     send_queue.put(None)
 
+# Init UI.
 root = Tk()
 root.title("Keyjazz")
 root.bind("<Destroy>", destroy)
@@ -87,6 +86,7 @@ label.pack()
 frame.pack()
 frame.focus_set()
 
+# Init BGB link.
 class BgbThread(Thread):
     def run(self):
         import socket
