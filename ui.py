@@ -40,7 +40,8 @@ def key(event):
         print "unknown key", event.keysym
 
 def key_release(event):
-    print "release", event.keysym
+    # print "release", event.keysym
+    pass
 
 has_focus = False
 
