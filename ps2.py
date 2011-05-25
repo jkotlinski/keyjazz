@@ -58,6 +58,17 @@ def key_to_ps2(key):
             "Home": [0x9b],
             "Insert": [7],
             "Delete": [0xc7],
+            "Ctrl+Left": [0x6b],
+            "Ctrl+Right": [0x17],
+            "Ctrl+Up": [0x57],
+            "Ctrl+Down": [0x27],
+
+            # Keys with control modifier (0xf0).
+            "Ctrl+Return": [0x14, 0x2d],
+            "Ctrl+F9": [0x14, 0x40],
+            "Ctrl+F10": [0x14, 0x48],
+            "Ctrl+F11": [0x14, 0xf],
+            "Ctrl+F12": [0x14, 0x70],
 
             # Two-byte keys. First byte from PS/2 keyboard is originally 0xe0.
             "Down": [3, 0x27],
@@ -72,11 +83,12 @@ def key_to_ps2(key):
 
 def key_up_to_ps2(key):
     table = {
-            "space": [0x80 | 0x4a],
-            "F9": [0x80 | 0x40],
-            "F10": [0x80 | 0x48],
-            "F11": [0x80 | 0xf],
-            "F12": [0x80 | 0x70],
+            # 7 is originally 0xf0...
+            "space": [7, 0x4a],
+            "Ctrl+F9": [0x14, 7, 0x40],
+            "Ctrl+F10": [0x14, 7, 0x48],
+            "Ctrl+F11": [0x14, 7, 0xf],
+            "Ctrl+F12": [0x14, 7, 0x70],
             }
     try:
         return table[key]

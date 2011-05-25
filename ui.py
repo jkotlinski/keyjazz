@@ -31,16 +31,26 @@ connected = False
 
 send_queue = Queue.Queue()
 
+ctrl = ""
+
 # UI callbacks.
 def key(event):
-    cmd = ps2.key_to_ps2(event.keysym)
+    if event.keysym == "Control_L":
+        global ctrl
+        ctrl = "Ctrl+"
+        return
+    cmd = ps2.key_to_ps2(ctrl + event.keysym)
     if cmd:
         send_queue.put(cmd)
     else:
-        print "unknown key", event.keysym
+        print "unknown key", ctrl + event.keysym
 
 def key_release(event):
-    cmd = ps2.key_up_to_ps2(event.keysym)
+    if event.keysym == "Control_L":
+        global ctrl
+        ctrl = ""
+        return
+    cmd = ps2.key_up_to_ps2(ctrl + event.keysym)
     if cmd:
         send_queue.put(cmd)
     else:
