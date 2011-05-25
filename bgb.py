@@ -37,9 +37,6 @@ def unpack(string):
     import struct
     return list(struct.unpack("B" * len(string), string))
 
-def version():
-    return pack([CMD_VERSION, 1, 3, 0])
-
 import socket
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
