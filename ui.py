@@ -40,8 +40,11 @@ def key(event):
         print "unknown key", event.keysym
 
 def key_release(event):
-    # print "release", event.keysym
-    pass
+    cmd = ps2.key_up_to_ps2(event.keysym)
+    if cmd:
+        send_queue.put(cmd)
+    else:
+        pass
 
 has_focus = False
 
