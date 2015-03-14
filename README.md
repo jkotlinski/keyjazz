@@ -6,4 +6,4 @@ keyjazz:
 * translates it to 8-bit truncated PS/2 signals, and
 * sends it to BGB emulated link port
 
-BGB homepage: http://bgb.bircd.org/
+BGB homepage: http://bgb.bircd.org/  (Keyjazz was developed & tested with v1.12)
